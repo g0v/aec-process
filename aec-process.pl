@@ -80,7 +80,8 @@ fetch_and_save_spds;
 
 if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
     chdir($ENV{AEC_OUTPUT_DIR});
-    system("git commit -a -m '$0 autocommit'");
+    system("git add --all");
+    system("git commit -m '$0 autocommit'");
     system("git pull");
     system("git push");
 }
