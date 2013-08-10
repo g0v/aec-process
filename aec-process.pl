@@ -7,6 +7,7 @@ use utf8;
 use HTTP::Tiny;
 use Encode ();
 use JSON::PP qw(encode_json);
+use FindBin;
 
 sub write_file {
     my ($file, $content) = @_;
@@ -95,9 +96,12 @@ fetch_and_save_gammamonitor;
 fetch_and_save_spds;
 
 if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
+    chdir($FindBin::Bin);
+    chomp( my $sha1 = `git log -1 --format='%H' aec-process.pl` );
+
     chdir($ENV{AEC_OUTPUT_DIR});
     system("git add --all");
-    system("git commit -m '$0 autocommit'");
+    system("git commit -m 'autocommit with aec-process.pl sha1'");
     system("git pull");
     system("git push");
 }
