@@ -101,7 +101,7 @@ if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
 
     chdir($ENV{AEC_OUTPUT_DIR});
     system("git add --all");
-    system("git commit -m 'autocommit with aec-process.pl sha1'");
+    system("git commit -m 'autocommit with aec-process.pl $sha1'");
     system("git pull");
     system("git push");
 }
