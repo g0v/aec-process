@@ -25,11 +25,6 @@ sub fetch {
 
     die "fetch failed" unless $response->{success};
 
-    my ($file) = $url =~ m!/([^/]+\.csv)$!;
-    open my $fh, ">", "/tmp/${file}";
-    print $fh $response->{content};
-    close($fh);
-
     return [ $response->{content}, [split / *\n */, Encode::decode(big5 => $response->{content})] ];
 }
 
@@ -54,7 +49,7 @@ sub fetch_and_save_spds {
         $status_code_to_text->{$n} = $text;
     }
 
-    my $localtime = sprintf("%04d-%02d-%02d %02d:%02d:%02d", @t);
+    my $localtime = sprintf("%04d-%02d-%02dT%02d:%02d:%02d+08", @t);
     my $spds = [
         map { +{
             localtime => $localtime,
@@ -70,12 +65,33 @@ sub fetch_and_save_spds {
     write_file("spds.json", encode_json($spds));
 }
 
-sub convert_gammamonitor {
-    my @csv = "http://www.aec.gov.tw/open/gammamonitor.csv";
+sub fetch_and_save_gammamonitor {
+    my $fetched = fetch("http://www.aec.gov.tw/open/gammamonitor.csv");
+    my $csv = $fetched->[1];
+
+    my $monitors = [
+        map {
+            my @row = split ",", $csv->[$_];
+            $row[3] .= ":00+08";
+            $row[3] =~ s!/!-!g;
+            $row[3] =~ s! !T!g;
+
+            +{
+                station    => $row[0],
+                station_en => $row[1],
+                value      => $row[2],
+                localtime  => $row[3],
+            }
+        } 1..$#$csv
+    ];
+
+    write_file("gammamonitor.csv", $fetched->[0]);
+    write_file("gammamonitor.json", encode_json($monitors));
 }
 
 # main
 
+fetch_and_save_gammamonitor;
 fetch_and_save_spds;
 
 if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
@@ -85,4 +101,3 @@ if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
     system("git pull");
     system("git push");
 }
-
