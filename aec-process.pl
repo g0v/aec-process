@@ -6,7 +6,7 @@ use utf8;
 
 use HTTP::Tiny;
 use Encode ();
-use JSON;
+use JSON::PP qw(encode_json);
 
 sub write_file {
     my ($file, $content) = @_;
@@ -67,7 +67,7 @@ sub fetch_and_save_spds {
     ];
 
     write_file("spds.csv", $fetched->[0]);
-    write_file("spds.json", JSON::encode_json($spds));
+    write_file("spds.json", encode_json($spds));
 }
 
 sub convert_gammamonitor {
@@ -77,3 +77,11 @@ sub convert_gammamonitor {
 # main
 
 fetch_and_save_spds;
+
+if ($ENV{AEC_GIT_AUTOCOMMIT} && $ENV{AEC_OUTPUT_DIR}) {
+    chdir($ENV{AEC_OUTPUT_DIR});
+    system("git commit -a -m '$0 autocommit'");
+    system("git pull");
+    system("git push");
+}
+
