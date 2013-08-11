@@ -19,6 +19,10 @@ sub write_file {
     close $fh;
 }
 
+sub encode_pretty_json {
+    return JSON::PP->new->utf8->pretty->encode($_[0]);
+}
+
 sub fetch {
     my $url = $_[0];
     my $ua = HTTP::Tiny->new;
@@ -64,6 +68,7 @@ sub fetch_and_save_spds {
 
     write_file("spds.csv", $fetched->[0]);
     write_file("spds.json", encode_json($spds));
+    write_file("spds.pretty.json", encode_pretty_json($spds));
 }
 
 sub fetch_and_save_gammamonitor {
@@ -88,6 +93,7 @@ sub fetch_and_save_gammamonitor {
 
     write_file("gammamonitor.csv", $fetched->[0]);
     write_file("gammamonitor.json", encode_json($monitors));
+    write_file("gammamonitor.pretty.json", encode_pretty_json($monitors));
 }
 
 # main
